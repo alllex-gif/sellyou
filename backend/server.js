@@ -6,6 +6,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
+// Import routes
+const authRoutes = require('./routes/auth');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -31,7 +34,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// TODO: Add authentication routes
+// Authentication routes
+app.use('/api/auth', authRoutes);
+
 // TODO: Add freelancer profile routes
 // TODO: Add service search routes
 // TODO: Add messaging routes
@@ -50,6 +55,10 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 SellYou server is running on http://localhost:${PORT}`);
   console.log(`📚 API Documentation: http://localhost:${PORT}/api/health`);
+  console.log(`\n🔐 Auth endpoints:`);
+  console.log(`   POST   /api/auth/signup`);
+  console.log(`   POST   /api/auth/login`);
+  console.log(`   GET    /api/auth/me (protected)\n`);
 });
 
 module.exports = app;
