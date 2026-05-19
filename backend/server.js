@@ -8,6 +8,7 @@ require('dotenv').config();
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const serviceRoutes = require('./routes/services');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -37,8 +38,10 @@ app.get('/api/health', (req, res) => {
 // Authentication routes
 app.use('/api/auth', authRoutes);
 
+// Service routes
+app.use('/api/services', serviceRoutes);
+
 // TODO: Add freelancer profile routes
-// TODO: Add service search routes
 // TODO: Add messaging routes
 // TODO: Add project posting routes
 
@@ -59,6 +62,12 @@ app.listen(PORT, () => {
   console.log(`   POST   /api/auth/signup`);
   console.log(`   POST   /api/auth/login`);
   console.log(`   GET    /api/auth/me (protected)\n`);
+  console.log(`🔍 Service endpoints:`);
+  console.log(`   POST   /api/services/add (protected)`);
+  console.log(`   GET    /api/services/search`);
+  console.log(`   GET    /api/services`);
+  console.log(`   GET    /api/services/my-services (protected)`);
+  console.log(`   GET    /api/services/:id\n`);
 });
 
 module.exports = app;
