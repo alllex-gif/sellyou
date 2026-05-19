@@ -56,13 +56,15 @@ app.use((err, req, res, next) => {
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`🚀 SellYou server is running on http://localhost:${PORT}`);
+  console.log(`\n🚀 SellYou server is running on http://localhost:${PORT}`);
   console.log(`📚 API Documentation: http://localhost:${PORT}/api/health`);
+  
   console.log(`\n🔐 Auth endpoints:`);
   console.log(`   POST   /api/auth/signup`);
   console.log(`   POST   /api/auth/login`);
-  console.log(`   GET    /api/auth/me (protected)\n`);
-  console.log(`🔍 Service endpoints:`);
+  console.log(`   GET    /api/auth/me (protected)`);
+  
+  console.log(`\n🔍 Service endpoints:`);
   console.log(`   POST   /api/services/add (protected)`);
   console.log(`   GET    /api/services/search`);
   console.log(`   GET    /api/services`);

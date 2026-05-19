@@ -1,14 +1,12 @@
-// Service Controller - Handles all service-related logic
-
-// In-memory database for services (we'll switch to real database later)
+// In-memory database for services
 let services = [];
 let serviceIdCounter = 1;
 
-// Add a service for a freelancer
+// Add a new service
 const addService = (req, res) => {
   try {
     const { title, description, category, hourlyRate, skills } = req.body;
-    const userId = req.userId; // From auth middleware
+    const userId = req.userId;
 
     // Validation
     if (!title || !description || !category || !hourlyRate) {
@@ -18,33 +16,46 @@ const addService = (req, res) => {
       });
     }
 
+    // Validate hourly rate
     if (hourlyRate <= 0) {
       return res.status(400).json({
         error: 'Hourly rate must be greater than 0'
       });
     }
 
-    // Valid categories
-    const validCategories = ['graphic-design', 'web-development', 'writing', 'marketing', 'video-editing', 'music', 'photography', 'other'];
+    // Validate category
+    const validCategories = [
+      'graphic-design',
+      'web-development',
+      'writing',
+      'video-editing',
+      'photography',
+      'social-media',
+      'virtual-assistant',
+      'marketing',
+      'other'
+    ];
+
     if (!validCategories.includes(category)) {
       return res.status(400).json({
         error: 'Invalid category',
-        validCategories: validCategories
+        validCategories
       });
     }
 
     // Create service
     const newService = {
       id: serviceIdCounter++,
-      userId,
+      freelancerId: userId,
       title,
       description,
       category,
       hourlyRate,
       skills: skills || [],
       rating: 0,
-      reviewCount: 0,
-      createdAt: new Date().toISOString()
+      reviews: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
     services.push(newService);
@@ -61,22 +72,22 @@ const addService = (req, res) => {
   }
 };
 
-// Search services by category, keywords, or skills
+// Search services with filters
 const searchServices = (req, res) => {
   try {
     const { category, keyword, minPrice, maxPrice, skills } = req.query;
 
-    let results = [...services];
+    let results = services;
 
     // Filter by category
     if (category) {
       results = results.filter(s => s.category === category);
     }
 
-    // Filter by keyword (searches in title and description)
+    // Filter by keyword (search in title and description)
     if (keyword) {
       const lowerKeyword = keyword.toLowerCase();
-      results = results.filter(s => 
+      results = results.filter(s =>
         s.title.toLowerCase().includes(lowerKeyword) ||
         s.description.toLowerCase().includes(lowerKeyword)
       );
@@ -90,27 +101,23 @@ const searchServices = (req, res) => {
       results = results.filter(s => s.hourlyRate <= parseFloat(maxPrice));
     }
 
-    // Filter by skills (comma-separated)
+    // Filter by skills (if service has any of the requested skills)
     if (skills) {
       const skillsArray = skills.split(',').map(s => s.trim().toLowerCase());
-      results = results.filter(s => 
-        skillsArray.some(skill => 
-          s.skills.map(sk => sk.toLowerCase()).includes(skill)
+      results = results.filter(s =>
+        s.skills.some(skill =>
+          skillsArray.includes(skill.toLowerCase())
         )
       );
     }
 
-    // Sort by rating (highest first)
-    results.sort((a, b) => b.rating - a.rating);
-
     res.json({
-      message: 'Search completed',
-      count: results.length,
-      results: results
+      total: results.length,
+      services: results
     });
   } catch (error) {
     res.status(500).json({
-      error: 'Search failed',
+      error: 'Failed to search services',
       message: error.message
     });
   }
@@ -120,9 +127,8 @@ const searchServices = (req, res) => {
 const getAllServices = (req, res) => {
   try {
     res.json({
-      message: 'All services',
-      count: services.length,
-      services: services
+      total: services.length,
+      services
     });
   } catch (error) {
     res.status(500).json({
@@ -132,26 +138,25 @@ const getAllServices = (req, res) => {
   }
 };
 
-// Get services for a specific freelancer
-const getFreelancerServices = (req, res) => {
+// Get current user's services (protected)
+const getMyServices = (req, res) => {
   try {
-    const userId = req.userId; // From auth middleware
-    const freelancerServices = services.filter(s => s.userId === userId);
+    const userId = req.userId;
+    const userServices = services.filter(s => s.freelancerId === userId);
 
     res.json({
-      message: 'Your services',
-      count: freelancerServices.length,
-      services: freelancerServices
+      total: userServices.length,
+      services: userServices
     });
   } catch (error) {
     res.status(500).json({
-      error: 'Failed to get services',
+      error: 'Failed to get your services',
       message: error.message
     });
   }
 };
 
-// Get a specific service by ID
+// Get service by ID
 const getServiceById = (req, res) => {
   try {
     const { id } = req.params;
@@ -164,8 +169,7 @@ const getServiceById = (req, res) => {
     }
 
     res.json({
-      message: 'Service found',
-      service: service
+      service
     });
   } catch (error) {
     res.status(500).json({
@@ -179,6 +183,6 @@ module.exports = {
   addService,
   searchServices,
   getAllServices,
-  getFreelancerServices,
+  getMyServices,
   getServiceById
 };
